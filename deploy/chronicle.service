@@ -1,0 +1,22 @@
+[Unit]
+Description=Chronicle personal time ledger
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=chronicle
+Group=chronicle
+Environment=CHRONICLE_ROOT=/opt/chronicle
+Environment=CHRONICLE_PORT=8787
+ExecStart=/opt/chronicle/deploy/run-tailnet.sh
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/chronicle/data
+
+[Install]
+WantedBy=multi-user.target

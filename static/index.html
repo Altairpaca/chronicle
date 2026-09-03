@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#202A33">
+    <meta name="description" content="Chronicle，个人时间账本与每日计划系统。">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Chronicle · 时间账本</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="rail" aria-label="主导航">
+        <a class="brand" href="/" aria-label="Chronicle 首页">C<span>Chronicle</span></a>
+        <nav class="nav-list">
+          <a class="nav-item is-current" href="#today">今日账本</a>
+          <a class="nav-item" href="#plans">计划库</a>
+          <a class="nav-item" href="#insight">回顾</a>
+        </nav>
+        <div class="rail-note">
+          <span class="eyebrow">柳比歇夫方法</span>
+          <p>先记录事实，再从事实中调整计划。</p>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">个人时间账本</p>
+            <h1>今天，怎么花？</h1>
+          </div>
+          <div class="date-control">
+            <label for="day-picker">查看日期</label>
+            <input id="day-picker" type="date">
+          </div>
+        </header>
+
+        <section class="summary-grid" aria-label="今日概况">
+          <article class="metric">
+            <span>已记录</span>
+            <strong id="total-time">0 <small>分钟</small></strong>
+            <p id="total-caption">从第一笔时间开始</p>
+          </article>
+          <article class="metric accent-metric">
+            <span>B 类专注</span>
+            <strong id="focus-time">0 <small>分钟</small></strong>
+            <p>生物能量用于高价值工作</p>
+          </article>
+          <article class="metric">
+            <span>今日计划</span>
+            <strong id="plan-count">0 <small>项</small></strong>
+            <p id="plan-caption">把目标拆成可计量时段</p>
+          </article>
+        </section>
+
+        <section class="workspace" id="today">
+          <div class="ledger-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">客观记录</p>
+                <h2>时间流水</h2>
+              </div>
+              <button class="button button-primary" id="new-entry" type="button">记一笔时间</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th scope="col">时段</th><th scope="col">事项</th><th scope="col">分类</th><th scope="col">B/S</th><th scope="col">能量</th><th scope="col">时长</th></tr>
+                </thead>
+                <tbody id="ledger-body"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="ledger-empty" hidden>
+              <strong>今天还没有时间记录</strong>
+              <span>从一个真实发生的时段开始，账本会逐渐显出你的节律。</span>
+            </div>
+          </div>
+
+          <aside class="side-stack">
+            <section class="timer-panel" aria-labelledby="timer-title">
+              <p class="eyebrow">正在进行</p>
+              <h2 id="timer-title">留一段时间给重要的事</h2>
+              <p id="timer-copy">开始后，结束时补充分类和能量即可。</p>
+              <button class="button button-primary button-wide" id="timer-toggle" type="button">开始专注记录</button>
+            </section>
+            <section class="energy-panel" aria-labelledby="energy-title">
+              <div class="section-heading compact"><h2 id="energy-title">B / S 能量模型</h2><span class="status-label">主观标记</span></div>
+              <p>用 B 记录需要生物能量的深度工作；<span class="no-wrap">用 S 记录社交</span>、事务与恢复。</p>
+              <div class="energy-key"><span><i class="dot moss"></i>B · 生物</span><span><i class="dot social"></i>S · 社会</span></div>
+              <div class="energy-bars" id="energy-bars"></div>
+            </section>
+          </aside>
+        </section>
+
+        <section class="plans-panel" id="plans">
+          <div class="section-heading">
+            <div><p class="eyebrow">计划而非愿望</p><h2>今日配额</h2></div>
+            <button class="button button-quiet" id="new-plan" type="button">添加计划</button>
+          </div>
+          <div class="plan-list" id="plan-list"></div>
+          <div class="empty-state inline" id="plan-empty" hidden><strong>还没有计划配额</strong><span>为一件想推进的事设一个可计量的时长。</span></div>
+        </section>
+        <section class="insight-panel" id="insight" aria-labelledby="insight-title">
+          <p class="eyebrow">每日回顾</p>
+          <h2 id="insight-title">先看事实，再调整明天</h2>
+          <p>对照计划配额与实际账目：哪些时段真正推进了目标，哪些事情反复占用注意力。明天只改变一个可观察的安排。</p>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="overlay" id="entry-overlay" aria-label="记录一段时间">
+      <section class="sheet">
+        <div class="section-heading compact"><h2 id="entry-title">记录一段时间</h2><button class="close-button" data-close type="button" aria-label="关闭">关闭</button></div>
+        <form id="entry-form">
+          <label>事项<input name="title" required maxlength="80" placeholder="例如：论文阅读"></label>
+          <div class="form-grid"><label>开始<input name="started_at" type="datetime-local" required></label><label>结束<input name="ended_at" type="datetime-local" required></label></div>
+          <div class="form-grid"><label>分类<input name="category" required placeholder="研究、工作、生活"></label><label>能量（1-5）<input name="energy" type="number" min="1" max="5" value="3" required></label></div>
+          <fieldset><legend>时间类型</legend><label class="choice"><input type="radio" name="bs_mode" value="B" checked> B · 深度/生物能量</label><label class="choice"><input type="radio" name="bs_mode" value="S"> S · 社会/事务能量</label></fieldset>
+          <label>简短注记<textarea name="note" rows="2" placeholder="发生了什么？"></textarea></label>
+          <p class="form-error" id="entry-error" role="alert"></p>
+          <button class="button button-primary button-wide" type="submit">保存到时间账本</button>
+        </form>
+      </section>
+    </dialog>
+
+    <dialog class="overlay" id="plan-overlay" aria-label="设置今日配额">
+      <section class="sheet">
+        <div class="section-heading compact"><h2 id="plan-title">设置今日配额</h2><button class="close-button" data-close type="button" aria-label="关闭">关闭</button></div>
+        <form id="plan-form">
+          <input name="planned_date" type="hidden">
+          <label>想推进什么<input name="title" required maxlength="80" placeholder="例如：完成研究综述"></label>
+          <div class="form-grid"><label>分类<input name="category" required placeholder="研究、工作、生活"></label><label>目标分钟<input name="target_minutes" type="number" min="5" step="5" value="60" required></label></div>
+          <p class="form-error" id="plan-error" role="alert"></p>
+          <button class="button button-primary button-wide" type="submit">保存计划</button>
+        </form>
+      </section>
+    </dialog>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
