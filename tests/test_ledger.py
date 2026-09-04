@@ -6,6 +6,16 @@ from chronicle_app import LedgerStore
 
 
 class TestLedgerStore(unittest.TestCase):
+    def test_sqlite_sidecars_are_ignored(self) -> None:
+        # Given: the repository's private SQLite data directory
+        ignore_file = Path(__file__).parents[1] / ".gitignore"
+
+        # When: the ignore policy is read
+        rules = ignore_file.read_text(encoding="utf-8")
+
+        # Then: every SQLite sidecar is covered by one repository rule
+        self.assertIn("data/*.sqlite3-*", rules)
+
     def test_records_entry_and_returns_daily_summary(self) -> None:
         # Given: an empty personal time ledger
         with tempfile.TemporaryDirectory() as directory:
