@@ -12,6 +12,7 @@ from ledger import LedgerStore
 
 ROOT = Path(__file__).parent
 STATIC_ROOT = ROOT / "static"
+MAX_JSON_BODY_BYTES = 64 * 1024
 
 
 class ChronicleHandler(SimpleHTTPRequestHandler):
@@ -59,6 +60,8 @@ class ChronicleHandler(SimpleHTTPRequestHandler):
 
     def _read_json(self) -> dict[str, object]:
         length = int(self.headers.get("Content-Length", "0"))
+        if length < 0 or length > MAX_JSON_BODY_BYTES:
+            raise ValueError(f"请求体不得超过 {MAX_JSON_BODY_BYTES} 字节")
         payload = json.loads(self.rfile.read(length).decode("utf-8"))
         if not isinstance(payload, dict):
             raise ValueError("请求体必须是对象")
@@ -87,8 +90,15 @@ class ChronicleHandler(SimpleHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(encoded)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(encoded)
+
+    def end_headers(self) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        super().end_headers()
 
     def log_message(self, format: str, *args: object) -> None:
         return
