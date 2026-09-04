@@ -20,6 +20,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Repository hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          tracked="$(git ls-files)"
+          if printf '%s\n' "$tracked" | grep -Eq '(^|/)(\.omo|\.opencode|\.codegraph)(/|$)|(^|/)\.env$|^data/.*\.sqlite3($|-(wal|shm|journal)$)'; then
+            echo "Forbidden local/runtime state is tracked:" >&2
+            printf '%s\n' "$tracked" | grep -E '(^|/)(\.omo|\.opencode|\.codegraph)(/|$)|(^|/)\.env$|^data/.*\.sqlite3($|-(wal|shm|journal)$)' >&2
+            exit 1
+          fi
       - name: Unit tests
         run: python -m unittest discover -s tests -v
       - name: Compile
